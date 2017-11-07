@@ -4,35 +4,53 @@
     <title>Socket.IO chat</title>
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
-      body { font: 13px Helvetica, Arial; }
+      body { font: 13px Helvetica, Arial; position: relative;}
       form { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
       form input { border: 0; padding: 10px; width: 80%; margin-right: .5%; font-size: 40px; height: 100px;}
       form button { width: 19%; background: rgb(130, 224, 255); border: none; padding: 10px; font-size: 40px; height: 100px;}
+      .copy { background: #000; padding: 3px; float: right; width: 166px;}
+      .copy button { width: 100%; background: rgb(130, 224, 255); border: none; padding: 10px; font-size: 40px; height: 100px;}
       #messages { list-style-type: none; margin: 0; padding: 0; font-size: 40px;}
       #messages li { padding: 5px 10px; }
       #messages li:nth-child(odd) { background: #eee; }
       #messages { margin-bottom: 40px }
+      #hiddenInput { opacity: 0;}
     </style>
   </head>
   <body>
     <ul id="messages"></ul>
+    <div class="copy">
+      <button>Copy</button>
+    </div>
     <form action="">
       <input id="m" autocomplete="off" /><button>Send</button>
     </form>
+    <input type="text" id="hiddenInput">
     <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
     <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
     <script>
       $(function () {
         var socket = io();
-        $('form').submit(function(){
+        $('form').submit(function () {
           socket.emit('chat message', $('#m').val());
           $('#m').val('');
           return false;
         });
-        socket.on('chat message', function(msg){
-          $('#messages').append($('<li>').text(msg));
+        socket.on('chat message', function (msg) {
+          if (msg.indexOf('http') != -1) {
+            var a = $('<a target="_blank">').attr('href', msg).text(msg);
+            var li = $('<li>').append(a);
+            $('#messages').append(li);
+          } else {
+            $('#messages').append($('<li>').text(msg));
+          }
+          $('#hiddenInput').val(msg)
           window.scrollTo(0, document.body.scrollHeight);
         });
+        $('.copy button').click(function () {
+          $('#hiddenInput').select()
+          document.execCommand('Copy')
+        })
       });
     </script>
   </body>
