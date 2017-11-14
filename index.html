@@ -14,7 +14,6 @@
       #messages li { padding: 5px 10px; }
       #messages li:nth-child(odd) { background: #eee; }
       #messages { margin-bottom: 40px }
-      #hiddenInput { opacity: 0;}
     </style>
   </head>
   <body>
@@ -25,12 +24,12 @@
     <form action="">
       <input id="m" autocomplete="off" /><button>Send</button>
     </form>
-    <input type="text" id="hiddenInput">
     <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
     <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
     <script>
       $(function () {
         var socket = io();
+        var copyText;
         $('form').submit(function () {
           socket.emit('chat message', $('#m').val());
           $('#m').val('');
@@ -44,14 +43,41 @@
           } else {
             $('#messages').append($('<li>').text(msg));
           }
-          $('#hiddenInput').val(msg)
           window.scrollTo(0, document.body.scrollHeight);
+          copyText = msg;
         });
         $('.copy button').click(function () {
-          $('#hiddenInput').select()
-          document.execCommand('Copy')
+          copy2Clipboard(copyText)
         })
       });
+
+      //code from neo service
+      function copy2Clipboard(text) {
+            var range = document.createRange(),
+                  selection;
+            var tmpElem = $('<div>');
+            tmpElem.css({
+                'position': "absolute",
+                'left': "-1000px",
+                'top': "-1000px",
+                'z-index': 0
+            });
+
+            var uniqueId = 'temp_div_for_copy';
+            tmpElem.attr('Id', uniqueId);
+
+            // Add the input value to the temp element.
+            tmpElem.text(text);
+            $("body").append(tmpElem);
+            // Select temp element.
+            range.selectNodeContents(tmpElem.get(0));
+            selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+
+            document.execCommand("copy", false, null);
+            $('#' + uniqueId).remove();
+        }
     </script>
   </body>
 </html>
